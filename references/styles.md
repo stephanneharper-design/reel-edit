@@ -1,25 +1,29 @@
 # Caption styles
 
 Captions are ASS subtitles rendered by ffmpeg (libass), so there is no browser step and renders are fast.
-Fonts ship in `assets/fonts` (Montserrat ExtraBold / SemiBold, DM Serif Display Italic, SIL Open Font License).
+Fonts ship in `assets/fonts` (Montserrat ExtraBold / SemiBold, Fredoka Bold, DM Serif Display Italic, SIL Open Font License).
 
 ## The three styles
 | style | look | words per line | motion |
 |---|---|---|---|
-| `signature` (default) | bold white Montserrat, the word being spoken lights up in the accent colour | 3 | gentle pop-in per line |
-| `calm` | soft lowercase cream text, no highlight | 5 | fade only |
-| `statement` | big uppercase, one or two words at a time | 2 | pop-in, word highlight |
+| `bold` (default) | big white uppercase Montserrat, the word being spoken lights up in the accent colour | 2 | pop-in per line |
+| `playful` | rounded Fredoka capitals, every word its own pastel colour (pink, blue, yellow, lime, peach) | 2 | bounce-in |
+| `artsy` | soft lowercase serif italics (DM Serif Display), punchlines get two twinkling sparkles | 3 | fade only |
 
-In every style, `emphasis` words get their own moment: big serif italic (or heavy caps in `statement`) in the
-accent colour, popped in. Use them for the punchline of each idea, 2 to 6 per reel. More than that and nothing
-stands out.
+Old names still work: `signature` and `statement` mean bold, `calm` and `cool girl` mean artsy.
 
-There is no zoom or camera motion in any style. Movement comes from the captions only.
+In every style, `emphasis` words get their own moment: bigger, popped in, in the accent colour (or rainbow letters in
+`playful`, or with sparkles in `artsy`). Use them for the punchline of each idea, 2 to 6 per reel. More than that and
+nothing stands out.
+
+A line in the user's script that names a style ("this is the playful style") is a good place to switch: give that
+section its own render or tell the user it can be done as a separate reel. There is no zoom or camera motion in any
+style; movement comes from the captions only.
 
 ## captions.json keys
 ```json
 {
-  "style": "signature",
+  "style": "bold",
   "accent": "#E8B4A0",
   "emphasis": ["free", "minutes"],
   "fixes": {"cloud": "Claude", "real south": "Real Self"},
@@ -40,7 +44,7 @@ There is no zoom or camera motion in any style. Movement comes from the captions
 
 ## Brand defaults (Real.Self.Steph)
 - Accent `#E8B4A0` (soft peach) unless config.json says otherwise. White or cream text, dark soft shadow.
-- Sentence case for `signature`, lowercase for `calm`.
+- Uppercase for `bold` and `playful`, lowercase for `artsy`.
 - Avoid: orange or neon captions, captions pinned to a left edge, @handle watermarks in a corner, date stamps,
   more than one emphasis word on screen at once.
 
