@@ -4,7 +4,7 @@
 Usage:  PY captions.py <project_dir>
 
 Reads captions.json in the project (all keys optional, see references/styles.md):
-  {"style": "signature" | "calm" | "statement",
+  {"style": "bold" | "playful" | "artsy",
    "accent": "#E8B4A0",            brand colour (defaults to config.json accent)
    "emphasis": ["money", "free"],  words that get their own big accent moment
    "fixes": {"cloud": "Claude"},   whole-word replacements (case-insensitive)
@@ -26,16 +26,22 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import common as C  # noqa: E402
 
 STYLES = {
-    # bold white words, the spoken word lights up in the accent colour, each line pops in gently
-    'signature': dict(font='Montserrat ExtraBold', size=82, color='#FFFFFF', case='as-is', maxWords=3,
-                      highlight=True, pop=True, emph_font='DM Serif Display', emph_size=150, emph_italic=True),
-    # soft lowercase, a fade and nothing else; emphasis words in a serif italic
-    'calm': dict(font='Montserrat SemiBold', size=60, color='#FFF6EC', case='lower', maxWords=5,
-                 highlight=False, pop=False, emph_font='DM Serif Display', emph_size=135, emph_italic=True),
-    # one or two big uppercase words at a time, for high-energy hooks
-    'statement': dict(font='Montserrat ExtraBold', size=112, color='#FFFFFF', case='upper', maxWords=2,
-                      highlight=True, pop=True, emph_font='Montserrat ExtraBold', emph_size=150, emph_italic=False),
+    # BOLD: big white uppercase words, the spoken word lights up in the accent colour, each line pops in
+    'bold': dict(font='Montserrat ExtraBold', size=100, color='#FFFFFF', case='upper', maxWords=2,
+                 highlight=True, pop='pop', rainbow=False, sparkle=False,
+                 emph_font='Montserrat ExtraBold', emph_size=150, emph_italic=False),
+    # PLAYFUL: rounded, colourful uppercase words that bounce in, each word its own pastel colour
+    'playful': dict(font='Fredoka Bold', size=96, color='#FFFFFF', case='upper', maxWords=2,
+                    highlight=False, pop='bounce', rainbow=True, sparkle=False,
+                    emph_font='Fredoka Bold', emph_size=150, emph_italic=False),
+    # ARTSY: soft lowercase serif italics that fade in, punchlines get little sparkles
+    'artsy': dict(font='DM Serif Display', size=86, color='#FFF8EF', case='lower', maxWords=3, italic=True,
+                  highlight=False, pop=False, rainbow=False, sparkle=True,
+                  emph_font='DM Serif Display', emph_size=140, emph_italic=True),
 }
+ALIASES = {'signature': 'bold', 'statement': 'bold', 'calm': 'artsy', 'cool girl': 'artsy', 'fun': 'playful'}
+RAINBOW = ['#FFB0E8', '#7FD0FF', '#FAE67A', '#D8FD8B', '#FFBF8A']
+STAR = 'm 0 -18 b 2 -4 4 -2 18 0 b 4 2 2 4 0 18 b -2 4 -4 2 -18 0 b -4 -2 -2 -4 0 -18'
 PAUSE = 0.35          # a gap this long between words starts a new caption line
 HOLD = 0.35           # how long the last line of a sentence stays after the last word
 
@@ -105,7 +111,7 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Cap,{st['font']},{st['size']},{base},{base},{shadow},{shadow},0,0,0,0,100,100,0,0,1,3,0,5,70,140,0,1
+Style: Cap,{st['font']},{st['size']},{base},{base},{shadow},{shadow},0,{-1 if st.get('italic') else 0},0,0,100,100,0,0,1,3,0,5,70,140,0,1
 Style: Emph,{st['emph_font']},{st['emph_size']},{ass_color(accent)},{ass_color(accent)},{shadow},{shadow},0,{-1 if st['emph_italic'] else 0},0,0,100,100,0,0,1,3,0,5,70,140,0,1
 Style: Hook,Montserrat ExtraBold,66,{ass_color('#1A1A1A')},{ass_color('#1A1A1A')},{ass_color(accent)},{ass_color(accent)},0,0,0,0,100,100,0,0,3,18,0,5,70,140,0,1
 
@@ -119,7 +125,9 @@ def main():
     cfg = C.load(os.path.join(proj, 'captions.json'), {}) or {}
     words = C.load(os.path.join(proj, 'words.json')) or sys.exit('Run transcribe.py first.')
     segs = C.load(os.path.join(proj, 'segments.json'))
-    st = dict(STYLES.get(cfg.get('style') or C.config().get('defaultStyle') or 'signature', STYLES['signature']))
+    name = (cfg.get('style') or C.config().get('defaultStyle') or 'bold').lower()
+    name = ALIASES.get(name, name)
+    st = dict(STYLES.get(name, STYLES['bold']))
     accent = cfg.get('accent') or C.config().get('accent') or '#E8B4A0'
     y = int(cfg.get('y', 1260))
     fixes = cfg.get('fixes', {})
@@ -141,17 +149,39 @@ def main():
         listing.append(f"{k:3d}  {ch['start']:6.2f}-{ch['end']:6.2f}  {'*' if ch['emph'] else ' '} {' '.join(texts)}")
         style = 'Emph' if ch['emph'] else 'Cap'
         sz = round(100 * scale)
-        pop = st['pop'] or ch['emph']
-        intro = (f'\\fscx{round(sz * .82)}\\fscy{round(sz * .82)}\\t(0,140,\\fscx{sz}\\fscy{sz})' if pop
-                 else f'\\fscx{sz}\\fscy{sz}')
+        pop = st['pop'] or ('pop' if ch['emph'] else False)
+        if pop == 'bounce':
+            intro = (f'\\fscx{round(sz * .6)}\\fscy{round(sz * .6)}\\t(0,120,\\fscx{round(sz * 1.12)}'
+                     f'\\fscy{round(sz * 1.12)})\\t(120,230,\\fscx{sz}\\fscy{sz})')
+        elif pop:
+            intro = f'\\fscx{round(sz * .82)}\\fscy{round(sz * .82)}\\t(0,140,\\fscx{sz}\\fscy{sz})'
+        else:
+            intro = f'\\fscx{sz}\\fscy{sz}'
+
+        def paint(i, t):
+            """Colour for word i: rainbow styles give every word (or every letter of a punchline) its own pastel."""
+            if not st.get('rainbow'):
+                return t
+            if ch['emph']:
+                return ''.join(f'{{\\c{ass_color(RAINBOW[(k + n) % len(RAINBOW)])}}}{c}' for n, c in enumerate(t))
+            return f'{{\\c{ass_color(RAINBOW[(k + i) % len(RAINBOW)])}}}{t}'
+
         steps = range(len(texts)) if (st['highlight'] and not ch['emph'] and len(texts) > 1) else [None]
         for j in steps:
             a = ch['start'] if j in (None, 0) else ch['words'][j]['s'] - 0.02
             b = ch['end'] if j is None or j == len(texts) - 1 else ch['words'][j + 1]['s'] - 0.02
             if b <= a:
                 continue
-            body = ' '.join(f'{{\\c{acc}}}{t}{{\\r}}{{\\fscx{sz}\\fscy{sz}\\blur2}}' if i == j else t
+            body = ' '.join(f'{{\\c{acc}}}{t}{{\\r}}{{\\fscx{sz}\\fscy{sz}\\blur2}}' if i == j else paint(i, t)
                             for i, t in enumerate(texts))
+            if st.get('sparkle') and ch['emph'] and j is None:
+                # two little twinkling stars either side of the punchline
+                half = len(' '.join(texts)) * st['emph_size'] * scale * 0.24 + 34
+                for dx, dy, d0 in ((-half, -st['emph_size'] * 0.35, 0), (half, -st['emph_size'] * 0.5, 120)):
+                    (back if layer == 'back' else front).append(
+                        f'Dialogue: 2,{ts(a)},{ts(b)},Cap,,0,0,0,,{{\\an5\\pos({px + dx:.0f},{py + dy:.0f})'
+                        f'\\c{acc}\\bord0\\shad0\\blur1\\fscx0\\fscy0\\t({d0},{d0 + 220},\\fscx170\\fscy170)'
+                        f'\\fad(0,70)\\p1}}{STAR}{{\\p0}}')
             first, last = j in (None, 0), j is None or j == len(texts) - 1
             tags = f'\\an5\\pos({px},{py})\\blur2' + (intro if first else f'\\fscx{sz}\\fscy{sz}')
             tags += f"\\fad({90 if first else 0},{70 if last else 0})"
@@ -175,7 +205,7 @@ def main():
     with open(os.path.join(work, 'chunks.txt'), 'w', encoding='utf-8') as f:
         f.write('\n'.join(listing) + '\n')
     print('\n'.join(listing))
-    print(f"OK {len(chunks)} caption chunks, style {cfg.get('style', 'signature')}, accent {accent}"
+    print(f"OK {len(chunks)} caption chunks, style {name}, accent {accent}"
           + (f', {len(back)} behind the speaker' if back else ''))
 
 
