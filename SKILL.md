@@ -27,10 +27,10 @@ Read `references/styles.md` before captioning and `references/safe-zone.md` befo
    On Windows PowerShell, put `&` in front: `& "PY" "SK/scripts/ingest.py" ...`. One command per call, full paths
    in double quotes with forward slashes, no `~` in arguments.
 3. If `SK/config.json` is missing, ask once, in one message: name, Instagram handle, brand accent colour (hex,
-   default `#E8B4A0`), default caption style (`signature`, `calm` or `statement`; suggest signature), where clips
+   default `#E8B4A0`), default caption style (`bold`, `playful` or `artsy`; suggest bold), where clips
    land (default `~/Downloads`) and where projects go (default `~/reels`). Save:
    ```json
-   {"name": "...", "instagram": "handle", "accent": "#E8B4A0", "defaultStyle": "signature",
+   {"name": "...", "instagram": "handle", "accent": "#E8B4A0", "defaultStyle": "bold",
     "clipsDir": "~/Downloads", "projectsDir": "~/reels"}
    ```
 

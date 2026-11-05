@@ -10,7 +10,7 @@ Built for speed:
 - **No constant zoom-ins.** Clean, steady shots. A zoom only happens on a line you ask for.
 
 ## Requirements
-- Claude Code on a Mac, Windows or Linux computer
+- A paid Claude plan (Pro or higher), with Claude Code on a Mac, Windows or Linux computer (get the desktop app at https://claude.com/download)
 - ffmpeg and Python 3.10+ (the skill checks and gives you the exact install line if something is missing)
 - Optional: Node.js 22+, only for words behind your head
 
@@ -35,11 +35,11 @@ up (about 2 minutes, once).
 ## Use it
 ```
 /reel-edit I just dropped 4 clips in my downloads
-/reel-edit use the calm style and put "free" behind my head
+/reel-edit use the playful style and put "free" behind my head
 the captions feel small and cut the pause before "and here's why"
 ```
 
 ## Credits
-Captions use Montserrat and DM Serif Display (SIL Open Font License, licences in `assets/fonts`). Transcription by
+Captions use Montserrat, Fredoka and DM Serif Display (SIL Open Font License, licences in `assets/fonts`). Transcription by
 [faster-whisper](https://github.com/SYSTRAN/faster-whisper). The optional cutout uses the open-source
 [HyperFrames](https://github.com/heygen-com/hyperframes) background remover (Apache-2.0).
